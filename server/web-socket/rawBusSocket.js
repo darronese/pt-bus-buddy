@@ -5,7 +5,12 @@ import { fetchLiveBusData } from "./fetchLiveBusData.js";
 // http server
 const server = http.createServer();
 // create a socket from our http
-const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: ["https://localhost:3000"],
+    methods: ["GET", "POST"],
+  },
+});
 
 // socket to connect our bus positions
 export async function rawBusSocket() {
@@ -28,19 +33,19 @@ export async function rawBusSocket() {
         });
 
         const mappedData = busPositions.entity
-        .filter((bus) => bus.vehicle?.position != null)
-        .map((bus) => ({
-          id: bus.vehicle.vehicle.id,
-          tripId: bus.vehicle.trip ? bus.vehicle.trip.tripId : null,
-          timestamp: Date.now(),
-          position: {
-            latitude: bus.vehicle.position.latitude,
-            longitude: bus.vehicle.position.longitude,
-            speed: bus.vehicle.position.speed,
-            bearing: bus.vehicle.position.bearing,
-          },
-        }));
-       socket.emit("busUpdate", mappedData);
+          .filter((bus) => bus.vehicle?.position != null)
+          .map((bus) => ({
+            id: bus.vehicle.vehicle.id,
+            tripId: bus.vehicle.trip ? bus.vehicle.trip.tripId : null,
+            timestamp: Date.now(),
+            position: {
+              latitude: bus.vehicle.position.latitude,
+              longitude: bus.vehicle.position.longitude,
+              speed: bus.vehicle.position.speed,
+              bearing: bus.vehicle.position.bearing,
+            },
+          }));
+        socket.emit("busUpdate", mappedData);
       } catch (err) {
         console.error("Error fetching or emitting bus data:", err);
       }
